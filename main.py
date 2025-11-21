@@ -24,7 +24,7 @@ def loadExcelDataset(path):
     return cleanTickData(rawData)
 
     
-dataSet = loadExcelDataset(r'C:\Interview Code\Elanco data code\Tick Sightings.xlsx')
+dataSet = loadExcelDataset(r'C:\Interview Code\Elanco data code\tickdata\Tick Sightings.xlsx')
 
 app = FastAPI()
 @app.get("/")
@@ -35,4 +35,14 @@ def home():
 def searchSightings(startDate: str = None, endDate: str = None, location: str = None):
     results = dataSet.copy()
     
+    if startDate:
+        results = results[results["date"] >= pd.to_datetime(startDate)]
+    
+    if endDate:
+        results = results[results["date"] <= pd.to_datetime(endDate)]
+
+    if location:
+        results = results[results["location"].str.contains(location.lower(), na=False)]
+        
+    return results.to_dict(orient="records")
 print("Git push working")

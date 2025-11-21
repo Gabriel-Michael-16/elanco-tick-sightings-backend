@@ -30,3 +30,4 @@ app = FastAPI()
 @app.get("/")
 def home():
     return {"message": "Tick API is running"}
+

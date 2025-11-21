@@ -43,6 +43,27 @@ def searchSightings(startDate: str = None, endDate: str = None, location: str = 
 
     if location:
         results = results[results["location"].str.contains(location.lower(), na=False)]
-        
+
+    results = results.sort_values(by="date", ascending=True)
     return results.to_dict(orient="records")
-print("Git push working")
+
+@app.get("/reports/location")
+def locationReport():
+    group = dataSet.groupby("location").size().reset_index(name="count")
+    return group.to_dict(orient="records")
+
+@app.get("/reports/monthly")
+def monthlyReport():
+    group = dataSet.groupby("month").size().reset_index(name="count")
+    return group.to_dict()
+
+@app.get("/reports/weekly")
+def weeklyReport():
+    weekly = dataSet.copy()
+    weekly["week"] = weekly["date"].dt.isocalendar().week
+    
+    group = weekly.groupby("week").size().reset_index(name="count")
+    group = group.sort_values(by="week", ascending=True)
+
+    return group.to_dict(orient="records")
+

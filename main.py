@@ -24,10 +24,15 @@ def loadExcelDataset(path):
     return cleanTickData(rawData)
 
     
-#dataSet = loadExcelDataset(r'C:\Interview Code\Elanco data code\Tick Sightings.xlsx')
+dataSet = loadExcelDataset(r'C:\Interview Code\Elanco data code\Tick Sightings.xlsx')
 
 app = FastAPI()
 @app.get("/")
 def home():
     return {"message": "Tick API is running"}
 
+@app.get("/search")
+def searchSightings(startDate: str = None, endDate: str = None, location: str = None):
+    results = dataSet.copy()
+    
+print("Git push working")

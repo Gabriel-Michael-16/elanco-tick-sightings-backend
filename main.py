@@ -58,7 +58,13 @@ def home():
     return {"message": "Tick API is running"}
 
 @app.get("/search")
-def searchSightings(startDate: str = None, endDate: str = None, location: str = None):
+def searchSightings(
+    startDate: str = None, 
+    endDate: str = None, 
+    location: str = None,
+    page: int = 1,
+    pageSize: int = 50
+):
     results = dataSet.copy()
     
     if startDate:
@@ -74,10 +80,20 @@ def searchSightings(startDate: str = None, endDate: str = None, location: str = 
         )
     elif location:
         results = results[results["location"].str.contains(location.lower(), na=False)]
-        
-
+    
     results = results.sort_values(by="date", ascending=True)
-    return results.to_dict(orient="records") or {"message": "No sightings match search criteria", "data":[]}
+    
+    startIndex = (page-1)*pageSize
+    endIndex = startIndex+pageSize
+
+    paginated = results.iloc[startIndex:endIndex]
+    
+    return {
+        "page": page,
+        "pageSize": pageSize,
+        "totalResults": len(results),
+        "returnedResults": len(paginated),
+        "data": paginated.to_dict(orient="records")} or {"message": "No sightings match search criteria", "data":[]}
 
 @app.get("/reports/location")
 def locationReport():

@@ -1,6 +1,7 @@
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 def cleanTickData(dataSet):
 
@@ -43,6 +44,13 @@ def parseDate(dateStr: str):
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
 @app.exception_handler(Exception)
 def allExceptionHandler(request, exc):
     return JSONResponse(
@@ -57,6 +65,26 @@ def allExceptionHandler(request, exc):
 def home():
     return {"message": "Tick API is running"}
 
+@app.get("/health")
+def healthCheck():
+    try:
+        if dataSet is None or len(dataSet) == 0:
+            return {"status": "warning", "message": "API running, but dataset is empty or not loaded"}
+
+        _ = dataSet.head(1)
+
+        return {
+            "status": "ok",
+            "message": "API is healthy",
+            "recordsLoaded": len(dataSet)
+        }
+    
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Health chech failed: {str(e)}"
+        }
+    
 @app.get("/search")
 def searchSightings(
     startDate: str = None, 
